@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход — Схема-дашборд</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-body">
+  <div class="auth-bg"></div>
+  <div class="auth-card">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <span>Схема</span>
+    </div>
+    <h1 id="auth-title">{{ 'Вход' if mode == 'login' else 'Регистрация' }}</h1>
+    <p class="auth-sub">Дашборд-схема с нодами и заметками</p>
+
+    <form id="auth-form" data-mode="{{ mode }}" autocomplete="off">
+      <label>Логин
+        <input type="text" name="username" id="username" placeholder="ваш логин" required minlength="3">
+      </label>
+      <label>Пароль
+        <input type="password" name="password" id="password" placeholder="••••••" required minlength="4">
+      </label>
+      <div class="auth-error" id="auth-error"></div>
+      <button type="submit" class="btn-primary" id="submit-btn">
+        {{ 'Войти' if mode == 'login' else 'Создать аккаунт' }}
+      </button>
+    </form>
+
+    {% if mode == 'login' %}
+      <p class="auth-switch">Нет аккаунта? <a href="{{ url_for('register_page') }}">Регистрация</a></p>
+    {% else %}
+      <p class="auth-switch">Уже есть аккаунт? <a href="{{ url_for('login_page') }}">Войти</a></p>
+    {% endif %}
+  </div>
+
+  <script>
+    const form = document.getElementById('auth-form');
+    const errBox = document.getElementById('auth-error');
+    const btn = document.getElementById('submit-btn');
+    const mode = form.dataset.mode;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errBox.textContent = '';
+      btn.disabled = true;
+      const payload = {
+        username: document.getElementById('username').value.trim(),
+        password: document.getElementById('password').value,
+      };
+      try {
+        const res = await fetch('/api/' + (mode === 'login' ? 'login' : 'register'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          errBox.textContent = data.error || 'Ошибка';
+          btn.disabled = false;
+          return;
+        }
+        window.location.href = '/dashboard';
+      } catch (err) {
+        errBox.textContent = 'Нет связи с сервером';
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

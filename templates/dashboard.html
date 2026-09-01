@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Схема-дашборд</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <span>Схема</span>
+    </div>
+    <div class="topbar-actions">
+      <input type="text" id="search-input" class="search-input" placeholder="🔍 Поиск по нодам…">
+      <button class="btn-ghost" id="add-root-btn" title="Новая материнская нода">✚ Материнская</button>
+      <button class="btn-ghost mode-btn" id="zone-mode-btn" title="Нарисовать зону — область, где живут ноды">▭ Зона</button>
+      <button class="btn-ghost mode-btn" id="link-mode-btn" title="Связать две ноды (у ноды может быть несколько родителей)">🔗 Связь</button>
+      <button class="btn-ghost" id="fit-btn" title="По центру">⊚ Центр</button>
+      <span class="user-chip">👤 {{ username }}</span>
+      <button class="btn-ghost" id="logout-btn">Выйти</button>
+    </div>
+  </header>
+
+  <div id="canvas-wrap">
+    <div id="canvas">
+      <div id="zones-layer"></div>
+      <svg id="edges" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="nodes-layer"></div>
+    </div>
+    <div id="select-box" hidden></div>
+    <div id="zone-draft" hidden></div>
+    <div id="zoom-badge">100%</div>
+    <div id="multi-toolbar" hidden>
+      <span id="multi-count"></span>
+      <button class="btn-danger btn-sm" id="multi-delete">Удалить выделенные</button>
+      <button class="btn-ghost btn-sm" id="multi-clear">Снять выделение</button>
+    </div>
+    <div id="toast"></div>
+  </div>
+
+  <!-- Node editor drawer -->
+  <aside id="editor" class="editor">
+    <div class="editor-head">
+      <input type="text" id="edit-title" placeholder="Заголовок ноды" maxlength="200">
+      <button class="icon-btn" id="close-editor" title="Закрыть">✕</button>
+    </div>
+    <div class="editor-toolbar">
+      <button class="icon-btn fmt-btn" id="fmt-bold" title="Жирный текст (Ctrl+B)"><b>Ж</b></button>
+      <span class="lbl">выделите текст и нажмите «Ж», чтобы сделать жирным</span>
+    </div>
+    <textarea id="edit-content" placeholder="Пишите заметку здесь…"></textarea>
+    <div class="editor-row">
+      <span class="lbl">Цвет</span>
+      <div class="palette" id="palette"></div>
+      <label class="color-pick" title="Любой цвет">
+        <input type="color" id="edit-color">
+        <span>🎨</span>
+      </label>
+    </div>
+    <div class="editor-row">
+      <span class="lbl">Размер</span>
+      <input type="number" class="size-input" id="edit-width" min="120" max="2000" step="10" title="Ширина, px">
+      <span class="lbl">×</span>
+      <input type="number" class="size-input" id="edit-height" min="60" max="2000" step="10" placeholder="авто" title="Мин. высота, px (пусто = авто)">
+      <button class="btn-ghost btn-sm" id="reset-size" title="Сбросить размер">↺</button>
+    </div>
+    <div class="editor-block">
+      <div class="editor-row">
+        <span class="lbl">Участники</span>
+        <select id="member-select" class="member-select">
+          <option value="">+ добавить пользователя…</option>
+        </select>
+      </div>
+      <div class="members" id="members"></div>
+    </div>
+    <div class="editor-block">
+      <div class="editor-row">
+        <span class="lbl">Файлы</span>
+        <label class="btn-ghost btn-sm file-btn">
+          + прикрепить
+          <input type="file" id="file-input" hidden>
+        </label>
+      </div>
+      <div class="files" id="files"></div>
+    </div>
+    <div class="editor-actions">
+      <button class="btn-primary" id="add-child">+ Дочерняя нода</button>
+      <button class="btn-ghost" id="export-branch" title="Скачать ветку (эта нода + все дочерние) в JSON">⭳ Экспорт</button>
+      <button class="btn-danger" id="delete-node">Удалить</button>
+    </div>
+    <div class="editor-meta" id="editor-meta"></div>
+  </aside>
+
+  <!-- Zone editor drawer -->
+  <aside id="zone-editor" class="editor zone-editor">
+    <div class="editor-head">
+      <input type="text" id="zone-title" placeholder="Название зоны" maxlength="200">
+      <button class="icon-btn" id="close-zone-editor" title="Закрыть">✕</button>
+    </div>
+    <div class="editor-row">
+      <span class="lbl">Цвет</span>
+      <label class="color-pick" title="Цвет зоны">
+        <input type="color" id="zone-color">
+        <span>🎨</span>
+      </label>
+    </div>
+    <p class="zone-hint">Ноды, оказавшиеся внутри границ зоны, «живут» в ней: двигайте зону за верхнюю полоску — они переедут вместе с ней.</p>
+    <div class="editor-actions">
+      <button class="btn-danger" id="delete-zone">Удалить зону</button>
+    </div>
+    <div class="editor-meta" id="zone-editor-meta"></div>
+  </aside>
+
+  <script>window.CURRENT_USER = {{ username|tojson }};</script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
